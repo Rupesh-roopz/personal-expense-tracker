@@ -19,5 +19,5 @@ router
     .post((req, res) => {
         user.profileUpdate(req, res)
     });
-    
+
 module.exports = router;
