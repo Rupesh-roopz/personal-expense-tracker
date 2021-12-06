@@ -6,7 +6,7 @@ const user = require('./userRoute')
 const router = () => {
     app.use('/user', user);
 
-    return app
+    return app;
 }
 
 module.exports = router
