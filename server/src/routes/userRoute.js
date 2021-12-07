@@ -1,23 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const user = require('../controller/userController');
-
+const { signUp, signIn, profileUpdate } = require('../controller/userController');
+const authenticateToken = require('../middlewares/auth')
 router
     .route('/signup')
     .post((req, res) => {
-        user.signUp(req, res);
+        signUp(req, res);
     });
 
 router
     .route('/signin')
     .post((req, res) => {
-        user.signIn(req, res);
+        signIn(req, res);
     });
 
 router 
     .route('/profile/update')
     .post((req, res) => {
-        user.profileUpdate(req, res)
+        profileUpdate(req, res)
     });
 
 module.exports = router;

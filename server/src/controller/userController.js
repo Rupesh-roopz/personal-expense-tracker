@@ -1,9 +1,11 @@
 const User = require('../models/userModel');
 const db = require('../utils/db');
-const {QueryTypes}  = require('sequelize');
+const { QueryTypes }  = require('sequelize');
+const jwt = require('jsonwebtoken');
 const { signupValidation } = require('../helpers/validations/signupValidation');
 const { signinValidation } = require('../helpers/validations/signinValidation');
 const http = require('../constants/http');
+require('dotenv').config();
 
 const signUp = async (req, res) => {
     try{
@@ -40,15 +42,24 @@ const signIn = async (req, res) => {
             console.log(error)
             return res.json(error)
         }
-        const { email, password} = req.body;
-
-        const sql = `SELECT email, password FROM users WHERE email="${email}" AND password="${password}";`;
+        const { email, password } = req.body;
+        
+        const sql = `SELECT userID FROM users WHERE email="${email}" AND password="${password}";`;
         await db.query(sql, { plain: true, raw: false, type: QueryTypes.SELECT })
-            .then((result) => {
+            .then(result => {
                 if (result === null) 
                     return res.status(http.BAD_REQUEST)
                             .json({ err : 'Invalid Login Credentials' });
-                return res.status(http.SUCCESS).send("Logged in successfully");
+                const userPayload = {
+                    ID : result.userID
+                }
+                const accessToken = jwt.sign(userPayload, process.env.ACCESS_TOKEN_SECRET);
+                res.cookie('token', accessToken,
+                    { expires : new Date(Date.now() + 90000000) });
+            
+                return res.status(http.SUCCESS).json({
+                    accessToken : accessToken
+                });
             })
             .catch((err) =>{
                  console.log(err);
@@ -72,7 +83,7 @@ const profileUpdate = async (req, res) => {
         password = "${password}" WHERE userID=2;`;
         //userID will get through the payload after implementing authentication
 
-       await db.query(sql,{ type : QueryTypes.UPDATE} )
+       await db.query(sql,{ plain: true, raw: false, type: QueryTypes.SELECT })
            .then((result) => {
                if (result === null) return console.log('Bad request!!!');
                 console.log(result[1]);
