@@ -1,18 +1,6 @@
-// const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = require('../utils/db');
+const  { DataTypes }  = require('sequelize');
 
-// require('dotenv').config();
-
-// const host = process.env.HOST
-// const user = process.env.USER
-// const db_password = process.env.DB_PASSWORD
-// const database = process.env.DATABASE
-// const dialect = process.env.DIALECT
-
-const sequelize = new Sequelize(database, user, db_password, 
-    {   
-        host : host,
-        dialect : dialect
-    })
 const User = sequelize.define('User', {
     userID : {
         type : DataTypes.INTEGER,
@@ -52,10 +40,6 @@ const User = sequelize.define('User', {
         type : DataTypes.STRING,
         allowNull : false
     }
-}, {
-    tableName: 'Users',
-    freezeTableName: true,
-    modelName : 'User'
 })
 
-module.exports = User
+module.exports = User;
