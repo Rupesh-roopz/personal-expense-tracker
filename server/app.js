@@ -15,9 +15,9 @@ const connection = async () => {
             .then(()=>{ 
                 console.log('Connection has been established successfully.');
             sequelize
-                .sync({alter: true})
+                .sync()
                     .then(result => {
-                        console.log("syncronized model syccessfully");
+                        console.log("syncronized model successfully");
                     }).catch( err => {
                         console.log(err);
                     })
