@@ -1,13 +1,13 @@
-const { monthDateFormat } = require('../dateFormat');
+const { month } = require('../dateToMonthConverter');
 
-const monthlyExpenseValidation = async (req) => {
+const monthlyExpenseValidation = (req) => {
     const error = {};
     const { monthStartingDate, monthlyEarnings,
         monthlyExpense, monthlyBalance } = req;
 
-    const date = monthDateFormat(monthStartingDate);
-    let currentMonth = new Date().getMonth();
-    const userSelectedMonth = new Date(date).getMonth() ;
+    const userSelectedMonth = month(monthStartingDate);
+    let currentMonth = new Date().getMonth() + 1;
+    console.log(userSelectedMonth)
 
     if(!(currentMonth === userSelectedMonth)) {
         error.DateError = {
@@ -18,4 +18,4 @@ const monthlyExpenseValidation = async (req) => {
     return error;
 }
 
-module.exports = {monthlyExpenseValidation};
+module.exports = { monthlyExpenseValidation };

@@ -1,7 +1,6 @@
-const db = require('../../utils/db');
-const { QueryTypes }  = require('sequelize');
+const { sequelize, Sequelize } = require('../../models');
 const regex = require('../../constants/regex');
-const { monthDateFormat } = require('../dateFormat');
+const { month } = require('../dateToMonthConverter');
 
 const signupValidation = async (req) => {
     const { firstName, lastName, dateOfBirth, profession,
@@ -10,8 +9,8 @@ const signupValidation = async (req) => {
     const emailRegx = regex.EMAIL;
     const passwordRegx = regex.PASSWORD;
 
-    const sql =`SELECT userID FROM users WHERE email="${email}";`;
-    await db.query(sql, { plain: true, raw: false, type: QueryTypes.SELECT })
+    const sql =`SELECT id FROM users WHERE email="${email}";`;
+    await sequelize.query(sql, { plain: true, raw: false, type: Sequelize.QueryTypes.SELECT })
         .then((result) => {
             if (result !== null) {
                 error.userExists = {
@@ -54,11 +53,10 @@ const signupValidation = async (req) => {
                     errorMessage : 'password must be same',
                 };
             }
-            const date = monthDateFormat(dateOfBirth);
-            const birthYear = new Date(date).getFullYear();
+            const birthYear = month(dateOfBirth);
             let currentYear = new Date().getFullYear();
 
-            if((birthYear+15) <= currentYear){
+            if((birthYear+15) >= currentYear){
                 error.age = {
                     errorMessage : 'Age must be greater than 15',
                 };
@@ -70,4 +68,4 @@ const signupValidation = async (req) => {
 
 }
 
-module.exports = {signupValidation}
+module.exports =  { signupValidation }

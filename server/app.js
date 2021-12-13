@@ -1,6 +1,6 @@
 const express = require('express');
-const router = require('./src/routes/index')
-const sequelize = require('./src/utils/db')
+const router = require('./src/routes/index');
+const { sequelize } = require('./src/models');
 require('dotenv').config();
 
 const app = express();
@@ -14,10 +14,11 @@ const connection = async () => {
         await sequelize.authenticate()
             .then(()=>{ 
                 console.log('Connection has been established successfully.');
-            sequelize
-                .sync()
-                    .then(result => {
-                        console.log("syncronized model successfully");
+            sequelize.sync({
+                // alter : true
+            })
+                    .then(() => {
+                        console.log("models synced with database successfully");
                     }).catch( err => {
                         console.log(err);
                     })
@@ -29,9 +30,11 @@ const connection = async () => {
             .catch(err => console.log('Database connection failed...'));
         
 
-      } catch (error) {
+      } catch {
         console.error('SERVER ERROR', error);
       }
 }
 connection();
+
+module.exports = app;
 

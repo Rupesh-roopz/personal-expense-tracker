@@ -12,7 +12,7 @@ const authenticateToken = (req, res, next) => {
         if (err) {
             return res.status(http.UNAUTHORISED);
         };
-        req.userID = result.ID;
+        req.user_id = result.ID;
         next();
     });
 }

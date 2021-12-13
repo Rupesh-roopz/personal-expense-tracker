@@ -1,6 +1,4 @@
-const User = require('../models/userModel');
-const db = require('../utils/db');
-const { QueryTypes }  = require('sequelize');
+const { sequelize, Sequelize, User } = require('../models')
 const jwt = require('jsonwebtoken');
 const { signupValidation } = require('../helpers/validations/signupValidation');
 const { signinValidation } = require('../helpers/validations/signinValidation');
@@ -27,7 +25,7 @@ const signUp = async (req, res) => {
             })
             .catch(err => {
                 console.log(err);
-                res.status(http.INTERNAL_SERVER_ERROR);
+                res.status(http.BAD_REQUEST);
             });
     } catch {
         res.status(http.INTERNAL_SERVER_ERROR);
@@ -44,14 +42,14 @@ const signIn = async (req, res) => {
         }
         const { email, password } = req.body;
         
-        const sql = `SELECT userID FROM users WHERE email="${email}" AND password="${password}";`;
-        await db.query(sql, { plain: true, raw: false, type: QueryTypes.SELECT })
+        const sql = `SELECT id FROM users WHERE email="${email}" AND password="${password}";`;
+        await sequelize.query(sql, { plain: true, raw: false, type: Sequelize.QueryTypes.SELECT })
             .then(result => {
                 if (result === null) 
                     return res.status(http.BAD_REQUEST)
                             .json({ err : 'Invalid Login Credentials' });
                 const userPayload = {
-                    ID : result.userID
+                    ID : result.id
                 }
                 const accessToken = jwt.sign(userPayload, process.env.ACCESS_TOKEN_SECRET);
                 res.cookie('token', accessToken,
@@ -63,7 +61,7 @@ const signIn = async (req, res) => {
             })
             .catch((err) =>{
                  console.log(err);
-                 res.status(http.INTERNAL_SERVER_ERROR);
+                 res.status(http.BAD_REQUEST);
                 })
     
     } catch {
@@ -83,7 +81,7 @@ const profileUpdate = async (req, res) => {
         password = "${password}" WHERE userID=2;`;
         //userID will get through the payload after implementing authentication
 
-       await db.query(sql,{ plain: true, raw: false, type: QueryTypes.SELECT })
+       await sequelize.query(sql,{ plain: true, raw: false, type: QueryTypes.SELECT })
            .then((result) => {
                if (result === null) return console.log('Bad request!!!');
                 console.log(result[1]);
@@ -93,7 +91,7 @@ const profileUpdate = async (req, res) => {
            })
            .catch((err) =>{
                 console.log(err);
-                res.status(http.INTERNAL_SERVER_ERROR);
+                res.status(http.BAD_REQUEST);
             })
 
     } catch {

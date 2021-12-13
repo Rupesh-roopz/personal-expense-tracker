@@ -1,6 +1,6 @@
 const regex = require('../../constants/regex');
 
-const signinValidation = async (req) => {
+const signinValidation = (req) => {
     const {email, password } = req.body;
     const error = {};
     const emailRegx = regex.EMAIL;
@@ -20,4 +20,4 @@ const signinValidation = async (req) => {
 
 }
 
-module.exports = {signinValidation}
+module.exports = { signinValidation }
