@@ -13,24 +13,25 @@ const connection = async () => {
     try {
         await sequelize.authenticate()
             .then(()=>{ 
-                console.log('Connection has been established successfully.');
+                console.log('Connection with database has established sucessfully');
             sequelize.sync({
                 // alter : true
+                // force : true
             })
-                    .then(() => {
-                        console.log("models synced with database successfully");
-                    }).catch( err => {
-                        console.log(err);
-                    })
+                .then(() => {
+                    console.log("models synced with database successfully");
+                }).catch( err => {
+                    console.log(err);
+                })
             app.listen(port, (error) => {
-                if(error) return console.log(error);
+                if(error) 
+                    return console.log(error);
                 console.log(`Connected to the server at port ${port}`);
         })
             })
             .catch(err => console.log('Database connection failed...'));
-        
 
-      } catch {
+      } catch (error){
         console.error('SERVER ERROR', error);
       }
 }
