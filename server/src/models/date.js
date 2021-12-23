@@ -26,6 +26,9 @@ module.exports = (sequelize, DataTypes) => {
 		models.ExpenseData.belongsTo(models.Date, {
 			foreignKey : 'date_id',
 		}); 
+		models.DailyExpense.belongsTo(models.Date, {
+			foreignKey : 'date_id',
+		}); 
 	};
 	return Date;
 };

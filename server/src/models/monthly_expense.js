@@ -37,6 +37,8 @@ module.exports = (sequelize, DataTypes) => {
 			foreignKey : 'month_id',
 			sourceKey : 'id'
 		});
+		
+
 	};
 
 	return MonthlyExpense;

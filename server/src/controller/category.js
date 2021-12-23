@@ -12,9 +12,7 @@ const addCategory = async (req, res) => {
 				const { categoryName } = req.body;
 				//Check wether category already exists
 				await Category.findOne({
-					where : {
-						categoryName
-					}
+					where : { categoryName }
 				})
 					.then( async data => {
 						//if category exists throws error

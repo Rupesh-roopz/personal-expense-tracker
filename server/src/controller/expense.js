@@ -132,15 +132,26 @@ const addExpense = async (req, res) => {
 				})
 				.then( async data => {
 					paymentMethod_id = data.id;
+					//adding exform form data to table
 					return await ExpenseData.create({
 						user_id, category_id, date_id, 
 						amount, description, paymentMethod_id
 					});
 				}).then( async () => {
+					//Updating Daily expense table
 					const isDataFound = await DailyExpense.findOne({
-						attributes : ['dailyTotalExpense'],
 						where : {
 							user_id, date_id
+						},
+						include : {
+							model : Date,
+							attributes : [
+								[sequelize.fn('sum', sequelize.col('amount')),
+								 'total']
+							],
+							include : {
+								model : ExpenseData
+							}
 						}
 					});
 					if(!isDataFound) {
@@ -148,14 +159,13 @@ const addExpense = async (req, res) => {
 							dailyTotalExpense : amount,
 							date_id, user_id });
 					}
-                
+					const result = JSON.stringify(isDataFound, null, 2);
+					const parsedResult = JSON.parse(result);
 					return await DailyExpense.update({
-						dailyTotalExpense : 
-                                    isDataFound.dailyTotalExpense + amount
+						dailyTotalExpense : parsedResult.Date.total
 					},{ where : {
 						user_id, date_id
 					} });
-                
 				})
 				.then(() => {
 					res.sendStatus(http.CREATED);
@@ -172,23 +182,18 @@ const totalDayExpense = async (req, res) => {
 	try{
 		const { date } = req.body;
 		const user_id = req.user_id; //gettig userId from authorization payload
-        
+
 		await Date.findOne({
-			where : {
-				user_id, date
-			},
-			include : {
-				model : ExpenseData,
-				attributes : [
-					[sequelize.fn('sum', sequelize.col('amount')), 'total']
-				],
-			}
+			where : { user_id, date },
+			include : { model : DailyExpense }
 		})
 			.then( data => {
+				
 				const result = JSON.stringify(data, null, 2);
 				const parsedResult = JSON.parse(result);
-				const total = parsedResult.ExpenseData[0].total;
-
+				console.log(parsedResult);
+				const total = parsedResult.DailyExpenses[0].dailyTotalExpense;
+				
 				res.status(http.SUCCESS).json({ totalDayExpense : total });
 			})
 			.catch( err => { throw err});
@@ -206,28 +211,41 @@ const monthlyTotalExpense = async (req, res) => {
 		const userSelectedMonth = month(date);
 
 		await MonthlyExpense.findOne({
+			// attributes : ['monthlyEarnings'],
 			where : {
 				user_id, month : userSelectedMonth
 			},
-			required : true,
-			include : 
-                {
-                	model : Date,
-                	attributes : [
-                		[sequelize.fn('sum', sequelize.col('amount')), 'total'] 
-                	],
-                	include : {
-                		model : ExpenseData,
-                	}
-                }
+			include : {
+				model : Date,
+				attributes : [
+					[sequelize.fn('sum', sequelize.col('amount')), 'total'] ],
+				include : { model : ExpenseData }
+			}
 		})
-			.then( data => {
+			.then( async data => {
 				const result = JSON.stringify(data, null, 2);
 				const parsedResult = JSON.parse(result);
 				const totalMonthExpense = parsedResult.Dates[0].total;
-
-				res.status(http.SUCCESS)
-					.json({ 'totalMonthExpense' : totalMonthExpense });
+				return await MonthlyExpense.update({
+					monthlyExpense : totalMonthExpense,
+					monthlyBalance : 
+						parsedResult.monthlyEarnings - totalMonthExpense
+				}, { 
+					where : { 
+						user_id, 
+						month : userSelectedMonth
+					}
+				});
+			})
+			.then(async () => {
+				return await MonthlyExpense.findOne({
+					where : {
+						user_id, month : userSelectedMonth
+					}
+				});
+			})
+			.then(data => {
+				res.status(http.SUCCESS).json(data);
 			})
 			.catch((err) =>{throw err});
 	} catch(error) {
@@ -245,20 +263,28 @@ const editExpense = async (req, res) => {
 		//checking weather updating for current month or not
 		//if current month returns 1 else throws error
 		const currentMonth = await isCurrentMonth(req.body.id, user_id );
-		console.log(currentMonth);
+
 		if(isValidData && currentMonth) {
 			const { id, amount, category,
 				paymentMethod, description } = req.body;
-			let category_id, paymentMethod_id;
+			let category_id, paymentMethod_id, date_id;
 
-			await Category.findOne({
-				where : {
-					categoryName : category
-				}
+			return await ExpenseData.findOne({
+				where : { id },
+				include : { model : Date }
 			})
+				.then( async data => {
+					const result = JSON.stringify(data, null, 2);
+					const parsedResult = JSON.parse(result);
+					date_id = parsedResult.Date.id;
+					return await Category.findOne({
+						where : {
+							categoryName : category
+						}
+					});
+				})
 				.then(async data =>{
 					category_id = data.id;
-					console.log(category_id);
 					return await PaymentMethod.findOne({
 						where : {
 							paymentMethodName : paymentMethod
@@ -267,7 +293,6 @@ const editExpense = async (req, res) => {
 				})
 				.then( async data => {
 					paymentMethod_id = data.id;
-					console.log(paymentMethod_id);
 					return await ExpenseData.update({
 						category_id, paymentMethod_id,
 						description, amount
@@ -277,7 +302,24 @@ const editExpense = async (req, res) => {
 						}
 					});
 				})
-				.then(data => {
+				.then(async data => {
+					if(data[0]) {
+						return await DailyExpense.findOne({
+							id : date_id
+						});
+					}
+					throw ({ 
+						errorMessage : 'not updated! values remains same' 
+					});
+				})
+				.then( async data => {
+					const total = data.dailyTotalExpense;
+					return await DailyExpense.update({ 
+						dailyTotalExpense : total + amount 
+					},
+					{ where : { id : date_id } });
+				})
+				.then( async data => {
 					if(data[0]) {
 						res.status(http.CREATED)
 							.json({ message : 'Updated successfully' });
@@ -286,7 +328,6 @@ const editExpense = async (req, res) => {
 					throw ({ 
 						errorMessage : 'not updated! values remains same' 
 					});
-
 				})
 				.catch(err => {
 					throw err;
@@ -294,7 +335,6 @@ const editExpense = async (req, res) => {
 		}
 	}
 	catch(error) {
-
 		res.status(http.BAD_REQUEST).json(error);
 	}
 };
@@ -347,17 +387,40 @@ const deleteExpense = async (req, res) => {
 		const user_id = req.user_id;
 		const expense_id = req.query.id;
 		const currentMonth = await isCurrentMonth(expense_id, user_id);
-        
+		let date_id, amount;
 		if(currentMonth) {
-			await ExpenseData.destroy({
-				where : { id : expense_id }
+			await ExpenseData.findOne({
+				where : { id : expense_id },
+				include : { model : Date }
 			})
-				.then( data => {
-					if(data)
-						res.status(http.SUCCESS)
-							.json({ message : 'Expense deleted successfully' });
+				.then( async data => {
+					const result = JSON.stringify(data, null, 2);
+					const parsedResult = JSON.parse(result);
+					amount = amount;
+					date_id = parsedResult.Date.id;
+					return await ExpenseData.destroy({
+						where : { id : expense_id }
+					});
+				})
+				.then( async data => {
+					if(data){
+						return await DailyExpense.findOne({
+							id : date_id
+						});
+					}
 					res.status(http.ACCEPTED)
 						.json({ message : 'Expense not deleted' });
+				})
+				.then( async data => {
+					const total = data.dailyTotalExpense;
+					return await DailyExpense.update({ 
+						dailyTotalExpense : total + amount 
+					},
+					{ where : { id : date_id } });
+				})
+				.then( () => {
+					return res.status(http.SUCCESS)
+						.json({ message : 'Expense deleted successfully' });
 				})
 				.catch(err => {
 					throw err;
@@ -365,6 +428,7 @@ const deleteExpense = async (req, res) => {
 		}
 	}
 	catch(error) {
+		console.log(error);
 		res.status(http.BAD_REQUEST).json(error);
 	}
 };
