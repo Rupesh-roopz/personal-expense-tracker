@@ -1,7 +1,7 @@
 const express = require('express');
 const { searchBetweenDates,
 	advancedSearch } = require('../controller/search');
-const authenticateToken = require('../middlewares/auth');
+const { authenticateToken } = require('../middlewares/auth');
 const router = express.Router();
 
 router

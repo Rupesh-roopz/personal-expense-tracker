@@ -22,4 +22,10 @@ const authenticateToken = (req, res, next) => {
     
 };
 
-module.exports = authenticateToken ;
+const isAdmin = (req, res, next) => {
+	if(req.isAdmin === 1)
+		next();
+	res.status(http.FORBIDDEN).json('forbidden');
+};
+
+module.exports = { authenticateToken , isAdmin };

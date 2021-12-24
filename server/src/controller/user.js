@@ -61,7 +61,8 @@ const signIn = async (req, res) => {
 
 					const accessToken = jwt.sign(
 						userPayload,
-						process.env.ACCESS_TOKEN_SECRET
+						process.env.ACCESS_TOKEN_SECRET,
+						{ expiresIn : '30m' }
 					);
 					res.setHeader('Authorization', accessToken);
 					return res.sendStatus(http.SUCCESS);
@@ -78,7 +79,7 @@ const signIn = async (req, res) => {
 
 const profileUpdate = async (req, res) => {
 	try{
-		const isValid = await userValidation(req);
+		const isValid = await userValidation(req.body);
 		if(isValid) {
 			const { firstName, lastName, email, dateOfBirth,
 				gender, profession, phoneNumber, password } = req.body;
@@ -101,6 +102,7 @@ const profileUpdate = async (req, res) => {
 				.catch(err => { throw err });
 		}
 	} catch(error) {
+		console.log(error);
 		res.status(http.BAD_REQUEST).json(error);
 	}
 };

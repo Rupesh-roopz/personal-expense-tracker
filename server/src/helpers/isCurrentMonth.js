@@ -11,6 +11,10 @@ const isCurrentMonth = async (id, user_id) => {
 		.then(data => {
 			const result = JSON.stringify(data, null, 2);
 			const parsedResult = JSON.parse(result);
+			if(parsedResult == null)
+				throw ({ 
+					errorMessage : 'Expense not exist' 
+				});
 			const date = parsedResult.Date.date;
 
 			const currentMonth = presentMonth();

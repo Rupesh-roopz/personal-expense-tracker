@@ -15,7 +15,7 @@ const isCurrentMonthExist = async (req, res) => {
 		//gettig userId from authorization payload
 		const id = req.user_id;
 
-		await MonthlyExpense.findAll({
+		await MonthlyExpense.findOne({
 			attributes : ['id'],
 			where : {
 				user_id : id,
@@ -23,9 +23,10 @@ const isCurrentMonthExist = async (req, res) => {
 			}
 		})
 			.then(result => {
+				console.log(result);
 				//if result equals null no data for this month is found
 				if (result === null) 
-					return res.status(http.NO_CONTENT)
+					return res.status(http.SUCCESS)
 						.json({ message : 'current month data not found' });
 				//else returns current month exists
 				return res.status(http.SUCCESS)
@@ -154,7 +155,8 @@ const addExpense = async (req, res) => {
 							}
 						}
 					});
-					if(!isDataFound) {
+					console.log(isDataFound);
+					if(isDataFound.dailyTotalExpense == null) {
 						return await DailyExpense.create({ 
 							dailyTotalExpense : amount,
 							date_id, user_id });
@@ -173,6 +175,7 @@ const addExpense = async (req, res) => {
 				.catch(err =>{ throw err});
 		}
 	} catch(error) {
+		console.log(error);
 		res.status(http.BAD_REQUEST).json(error);
 	}
     
@@ -191,7 +194,10 @@ const totalDayExpense = async (req, res) => {
 				
 				const result = JSON.stringify(data, null, 2);
 				const parsedResult = JSON.parse(result);
-				console.log(parsedResult);
+				if(parsedResult == null)
+					return res.status(http.SUCCESS)
+						.json({ message : 'No Expenses today' });
+
 				const total = parsedResult.DailyExpenses[0].dailyTotalExpense;
 				
 				res.status(http.SUCCESS).json({ totalDayExpense : total });
@@ -211,7 +217,6 @@ const monthlyTotalExpense = async (req, res) => {
 		const userSelectedMonth = month(date);
 
 		await MonthlyExpense.findOne({
-			// attributes : ['monthlyEarnings'],
 			where : {
 				user_id, month : userSelectedMonth
 			},
@@ -225,6 +230,10 @@ const monthlyTotalExpense = async (req, res) => {
 			.then( async data => {
 				const result = JSON.stringify(data, null, 2);
 				const parsedResult = JSON.parse(result);
+				if(!parsedResult.Dates.length){
+					return res.status(http.SUCCESS)
+						.json({ message : 'No Expenses in this month' });
+				}
 				const totalMonthExpense = parsedResult.Dates[0].total;
 				return await MonthlyExpense.update({
 					monthlyExpense : totalMonthExpense,
@@ -249,6 +258,7 @@ const monthlyTotalExpense = async (req, res) => {
 			})
 			.catch((err) =>{throw err});
 	} catch(error) {
+		console.log(error);
 		res.status(http.BAD_REQUEST).json(error);
 	}
 };

@@ -2,24 +2,23 @@ const express = require('express');
 const router = express.Router();
 const { addPaymentMethod, 
 	editPaymentMethod, fetchPaymentMethod } = require('../controller/payment');
-const authenticateToken = require('../middlewares/auth');
-
+const { authenticateToken, isAdmin } = require('../middlewares/auth');
 
 router
 	.route('/add')
-	.post(authenticateToken, (req, res) => {
+	.post(authenticateToken, isAdmin, (req, res) => {
 		addPaymentMethod(req, res);
 	});
 
 router
 	.route('/fetch')
-	.get(authenticateToken, (req, res) => {
+	.get(authenticateToken, isAdmin, (req, res) => {
 		fetchPaymentMethod(req, res);
 	});
 
 router
 	.route('/update')
-	.put(authenticateToken, (req, res) => {
+	.put(authenticateToken, isAdmin, (req, res) => {
 		editPaymentMethod(req, res);
 	});
 module.exports = router;
