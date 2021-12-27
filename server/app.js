@@ -11,18 +11,18 @@ app.use('/',router());
 
 const connection = async () => {
 	try {
-		await sequelize.authenticate()
+		await sequelize
+			.authenticate()
 			.then(()=>{ 
 				console.log('Connection to database successfully');
 				sequelize.sync({
 					// alter : true
 					// force : true
-				})
-					.then(() => {
-						console.log("models synced with database successfully");
-					}).catch( err => {
-						console.log(err);
-					});
+				}).then(() => {
+					console.log("models synced with database successfully");
+				}).catch( err => {
+					console.log(err);
+				});
 				app.listen(port, (error) => {
 					if(error) 
 						return console.log(error);

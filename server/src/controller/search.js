@@ -34,18 +34,16 @@ const searchBetweenDates = async (req, res) => {
 						}]
 					}
 				]
-			})
-				.then( data => {
-					if(data.length){
-						const result = JSON.stringify(data, null, 2);
-						const parsedResult = JSON.parse(result);
-						return res.status(http.SUCCESS)
-							.json(parsedResult);
-					}
-					res.status(http.SUCCESS)
-						.json('no records found between dates');
-				})
-				.catch((err) => { throw err });
+			}).then( data => {
+				if(data.length){
+					const result = JSON.stringify(data, null, 2);
+					const parsedResult = JSON.parse(result);
+					return res.status(http.SUCCESS)
+						.json(parsedResult);
+				}
+				res.status(http.SUCCESS)
+					.json('no records found between dates');
+			}).catch((err) => { throw err });
 		}
         
 	} catch(error) {
@@ -97,19 +95,14 @@ const advancedSearch = async (req, res) => {
 						}]
 					}
 				]
-			})
-				.then( data => {
-					if(data.length === 0) {
-						res.status(http.SUCCESS)
-							.json({ message : 'No records found' });
-						return;
-					}
-					return res.status(http.SUCCESS).json(data);
-				})
-				.catch((err) => {
-					console.log(err);
-					throw err;
-				});
+			}).then( data => {
+				if(data.length === 0) {
+					res.status(http.SUCCESS)
+						.json({ message : 'No records found' });
+					return;
+				}
+				return res.status(http.SUCCESS).json(data);
+			}).catch((err) => { throw err });
 		}
     
 	} catch(error) {

@@ -7,28 +7,25 @@ const isCurrentMonth = async (id, user_id) => {
 		include : {
 			model : Date,
 		}
-	})
-		.then(data => {
-			const result = JSON.stringify(data, null, 2);
-			const parsedResult = JSON.parse(result);
-			if(parsedResult == null)
-				throw ({ 
-					errorMessage : 'Expense not exist' 
-				});
-			const date = parsedResult.Date.date;
+	}).then(data => {
+		const result = JSON.stringify(data, null, 2);
+		const parsedResult = JSON.parse(result);
+		if(parsedResult == null)
+			throw ({ 
+				errorMessage : 'Expense not exist' 
+			});
+		const date = parsedResult.Date.date;
 
-			const currentMonth = presentMonth();
-			const selectedMonth = month(date);
+		const currentMonth = presentMonth();
+		const selectedMonth = month(date);
 
-			if(currentMonth !== selectedMonth)
-				throw ({ 
-					errorMessage : 'current month expenses can only be change' 
-				});
-			return;
-		})
-		.catch(err => {
-			throw err;
-		});
+		if(currentMonth !== selectedMonth)
+			throw ({ 
+				errorMessage : 'current month expenses can only be change' 
+			});
+		return;
+	}).catch(err => { throw err });
+	
 	return 1;
 };
 
