@@ -5,6 +5,7 @@ const { signinValidation } = require('../helpers/validations/signin');
 const http = require('../constants/http');
 require('dotenv').config();
 
+
 const signUp = async (req, res) => {
 	try{
 		const isValid = await userValidation(req.body);
@@ -18,17 +19,18 @@ const signUp = async (req, res) => {
 				if(data)
 					return res.status(http.CONFLICT)
 						.json({ message : 'user already exists' });
-                
-				return await User.create({
+				const newUser = await User.create({
 					firstName, lastName, email, dateOfBirth,
 					gender, profession, phoneNumber, password, isAdmin
-				});
-			}).then( data => {
-				return res.status(http.CREATED).json({ data });
-			}).catch(err => { throw err });
+				})
+				res.status(http.CREATED).json({newUser});
+			})
+			.catch(err => { throw err });
 		}
+		
         
 	} catch(error) {
+		console.log(error)
 		res.status(http.BAD_REQUEST).json(error);
 	}
    

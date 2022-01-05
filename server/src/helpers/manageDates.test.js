@@ -35,11 +35,4 @@ describe('Manage dates', () => {
         
         expect(getYear(date)).toBe(2021)
     })
-
-    test('Returning current date as formatted string', () => {
-        const date = new Date().toLocaleDateString();
-        const dateString = `${date.slice(6,10)}-${date.slice(3,5)}-${date.slice(0,2)}`;
-        
-        expect(currentDate()).toBe(dateString)
-    })
 })

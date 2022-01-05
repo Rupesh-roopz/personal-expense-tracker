@@ -24,7 +24,6 @@ const authenticateToken = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-	console.log(req.isAdmin)
 	if(req.isAdmin)
 		return next();
 	res.status(http.FORBIDDEN).json('forbidden');

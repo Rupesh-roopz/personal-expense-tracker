@@ -1,5 +1,5 @@
 const regex = require('../../constants/regex');
-const { month, currentDate, getYear} = require('../manageDates');
+const { getYear } = require('../manageDates');
 
 const userValidation = async (req) => {
 	const { firstName, lastName, dateOfBirth, profession,

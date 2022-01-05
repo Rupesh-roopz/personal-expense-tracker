@@ -3,7 +3,8 @@ const { currentDate } = require('../manageDates');
 
 describe('Expense form validation', () => {
     test('Valid expense form', async () => {
-        const date = currentDate()
+        const date = currentDate();
+
         const mockExpenseForm = {
             date : date,
             amount : 2000
